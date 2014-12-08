@@ -1,6 +1,7 @@
 //type
 J.$package(function(J){
 
+    // 对象转化为字符串
     var ots=Object.prototype.toString;
 
     var type={
