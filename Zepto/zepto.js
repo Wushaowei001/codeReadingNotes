@@ -396,6 +396,7 @@ Zepto = (function () {
             return false
         }
 
+    // 若 arg 为函数，则在 context 上下文环境下执行传入 idx 和 payload，执行这个函数
     function funcArg (context, arg, idx, payload) {
         return isFunction(arg) ? arg.call(context, idx, payload) : arg
     }
@@ -876,7 +877,6 @@ Zepto = (function () {
             return $(this.pluck('nextElementSibling')).filter(selector || '*')
         },
 
-        //### 2014.12.3
         html: function (html) {
             return 0 in arguments ?
                 this.each(function (idx) {
