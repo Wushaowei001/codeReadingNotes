@@ -1,5 +1,6 @@
 //browser
 J.$package(function(J){
+    // 这里的 J.$package(ns, func) 未传入 ns 参数, 表示将 func 默认挂载到 window 下
     var s, browser,
         ua = navigator.userAgent.toLowerCase(),
         plug = navigator.plugins;
@@ -11,10 +12,19 @@ J.$package(function(J){
      * @return Number 
      */
     var toFixedVersion = function(ver, floatLength){
+        // 'a_b_c' => 'a.b.c'
         ver= (""+ver).replace(/_/g,".");
+        
+        // 小数点数默认为 1
         floatLength = floatLength || 1;
+
+        // 'a.b.c' => ['a', 'b', 'c']
         ver = String(ver).split(".");
+
+        // => 'a.b'
         ver = ver[0] + "." + (ver[1] || "0");
+        // 若 floatLength
+        // => a.b0
         ver = Number(ver).toFixed(floatLength);
         return ver;
     };

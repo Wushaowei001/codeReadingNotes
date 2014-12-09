@@ -4,6 +4,9 @@ J.$package(function(J){
 
     if(window.getComputedStyle){
         styles = window.getComputedStyle(document.documentElement, '');
+        // styles => 一个类数组
+        // Array.prototype.slice.call(styles) => 转化为数组
+        // Array.prototype.slice.call(styles).join('') => 转化为字符串
         pre = (Array.prototype.slice
             .call(styles)
             .join('')
@@ -11,6 +14,7 @@ J.$package(function(J){
         )[1];
         dom = ('WebKit|Moz|MS|O').match(new RegExp('(' + pre + ')', 'i'))[1];
 
+        // 将多种格式的前缀格式返回
         J.prefix = {
             dom: dom,
             lowercase: pre,
