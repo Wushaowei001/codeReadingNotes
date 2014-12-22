@@ -1362,29 +1362,16 @@
                 item.canScrollInMTB = value;
             });
         },
+        
+        // 注意这里声明了 model 的类型
         type: "pageModel",
+        
         exportTab: renderModel.prototype.exportTab,
+        
         //增加一个渲染模型，大致按cgi去划分
         add: function(model){
             this.models.push(model);
             model.controller = this;
-
-            /*
-            if(! this._userSetContainer){
-                var container = this.renderContainer;
-                var container2;
-
-                if(typeof container === "string"){
-                    container = $(container);
-                }
-
-                if(typeof model.container === "string"){
-                    container2 = $(model.renderContainer);
-                }
-
-                this.findAnsestor(container, container2);
-            }
-            */
         },
 
         remove: function(model){
@@ -1440,7 +1427,6 @@
         extend: function(){
             var func = function(){};
             func.prototype = this;
-
 
             var son = new func();
             son.parent = this;
