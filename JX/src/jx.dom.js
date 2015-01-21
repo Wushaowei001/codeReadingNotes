@@ -76,7 +76,6 @@ Jx().$package(function(J){
     $D = J.dom;
     $B = J.browser;
     
-        
 
     // find targeted window and @TODO create facades
     w = ($D.win) ? ($D.win.contentWindow) : $D.win  || window;
@@ -84,6 +83,7 @@ Jx().$package(function(J){
     $D.doc = w.document;
     
     // feature detection 必须对已创建的对象检测
+    // 检测是否支持 classList 对象
     var hasClassListProperty = document && Object.prototype.hasOwnProperty.call(document.documentElement,'classList');
 
     /**
@@ -94,6 +94,7 @@ Jx().$package(function(J){
      * @return {HTMLElement} documentElement
      * 
      */
+    // 获取到 document 对象
     getDocumentElement = function(){
         if(DocumentElement) {
             return DocumentElement;
@@ -114,6 +115,7 @@ Jx().$package(function(J){
      * @return {HTMLElement} document
      * 
      */
+    // $D.getDoc()
     getDoc = function(element) {
         if(element) {
             element = element || window.document;
@@ -181,6 +183,8 @@ Jx().$package(function(J){
      * 
      * 
      */
+    // $D.id(id, doc);
+    // doc 指定查找范围
     id = function(id, doc) {
         return getDoc(doc).getElementById(id);
     };
@@ -323,6 +327,7 @@ Jx().$package(function(J){
         }else{
             scrollHeight = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
         }
+        // 返回 0 是为了容错处理
         return scrollHeight || 0;
     };
     
@@ -385,7 +390,6 @@ Jx().$package(function(J){
      * @return {Number} The height of the viewable area of the page (excludes scrollbars).
      */
     getOffsetHeight = function(el) {
-        var name = J.browser.engine.name;
         el = el || getDocumentElement();
         return el.offsetHeight; 
     };
@@ -399,7 +403,6 @@ Jx().$package(function(J){
      * @return {Number} 宽度值.
      */
     getOffsetWidth = function(el) {
-        var name = J.browser.engine.name;
         el = el || getDocumentElement();
         return el.offsetWidth;
     };
@@ -451,6 +454,8 @@ Jx().$package(function(J){
      * @param {Element} el 元素
      * @param {String} className class 名称
      */
+    // $D.set(el, className);
+    // 注意这里是直接覆写了 className 属性
     setClass = function(el, className){
         el.className = className;
     };
@@ -492,6 +497,8 @@ Jx().$package(function(J){
                 if (!el || !className) {
                     return false;
                 }
+                // 简单粗暴使用正则匹配
+                // ' class1 class2 class3 ' 匹配 ' class1 '
                 return -1 < (' ' + el.className + ' ').indexOf(' ' + className + ' ');
             };
         }
@@ -507,6 +514,7 @@ Jx().$package(function(J){
      * @param {Element} el 元素
      * @param {String} className class 名称
      */
+    // 注意 setClass 是直接覆写 className 而 addClass 则是在末尾添加 class
     addClass = function(){
         if (hasClassListProperty) {
             return function (el, className) {
@@ -516,6 +524,7 @@ Jx().$package(function(J){
                 el.classList.add(className);
             };
         } else {
+            // 该死的低版本浏览器。。。
             return function (el, className) {
                 if (!el || !className || hasClass(el, className)) {
                     return;
@@ -584,6 +593,7 @@ Jx().$package(function(J){
                 if (!el || !className) {
                     return;
                 }
+                // 有则删除，无则添加
                 hasClass(el, className) ? removeClass(el, className) : addClass(el, className);
             };
         }
@@ -601,26 +611,10 @@ Jx().$package(function(J){
      * @param {String} newClassName 要替换成的 class 名称
      */
     replaceClass = function(el, oldClassName, newClassName){
+        // 简单粗暴，先删除后添加
         removeClass(el, oldClassName);
         addClass(el, newClassName);
-        //el.className = (" "+el.className+" ").replace(" "+oldClassName+" "," "+newClassName+" ");
     };
-    /*
-    replaceClass2 = function(el, oldClassName, newClassName){
-        var i,
-            tempClassNames = el.className.split(" ");
-            
-        for(i=0; i<tempClassNames.length; i++){
-            if(tempClassNames[i] === oldClassName){
-                tempClassNames[i] = newClassName;
-            }
-        }
-        //J.out(tempClassNames);
-
-        el.className = tempClassNames.join(" ");
-    };
-    */
-    
     /**
      * 
      * 创建 style 标签
@@ -631,12 +625,14 @@ Jx().$package(function(J){
      * @param 样式内容，支持string和object
      * @param {String} id 样式标签的 id
      */
+    // 创建一个 <style></style> 标签
     createStyleNode = function(styles, id){
         var styleNode = $D.node('style', {
             'id': id || '',
             'type': 'text/css'
         });
 
+        //附加到 head 中
         $D.getDocHead().appendChild(styleNode);
 
         var stylesType = typeof(styles);
@@ -649,6 +645,7 @@ Jx().$package(function(J){
             }
         }else if(stylesType == "object"){   //参数是对象
             var i = 0,
+                // 在最后一个样式表中添加
                 styleSheet = document.styleSheets[document.styleSheets.length-1];
             for(selector in styles){
                 if(styleSheet.insertRule){
@@ -688,21 +685,9 @@ Jx().$package(function(J){
             }
         }
         
-        //J.out(styleName);
-        
         if(styleName === "opacity" && name === "ie" && J.browser.ie<9){
             var opacity = value*100;
-            
-            /*
-            if(el.style.filter.alpha){
-                
-                el.style.filter.alpha.opacity = opacity;
-                J.debug("filter alpha!")
-            }else{
-                addCssText(el,'filter:alpha(opacity="' + opacity + '")');
-            }*/
-            //addCssText(el,'filter:alpha(opacity="' + opacity + '")');
-            //J.out(">>>el.style.filter.alpha.opacity: "+el.style.filter.alpha.opacity);
+
             el.style.filter = 'alpha(opacity="' + opacity + '")';
 
             if(!el.style.zoom){
@@ -713,10 +698,7 @@ Jx().$package(function(J){
         }
         el.style[styleName] = value;
     };
-    
-    
 
-    
     /**
      * 
      * 获取元素的当前实际样式，css 属性需要用驼峰式写法，如：fontFamily
@@ -735,7 +717,6 @@ Jx().$package(function(J){
         
         var win = getWin(el);
         var name = J.browser.name;
-        //J.out(name);
         if(styleName === "float" || styleName === "cssFloat"){
             if(name === "ie"){
                 styleName = "styleFloat";
@@ -755,10 +736,8 @@ Jx().$package(function(J){
         if(el.style[styleName]){
             return el.style[styleName];
         }else if(el.currentStyle){
-            //alert(el.currentStyle[styleName]);
             return el.currentStyle[styleName];
         }else if(win.getComputedStyle){
-            //J.out(win.getComputedStyle(el, null));
             return win.getComputedStyle(el, null)[styleName];
         }else if(document.defaultView && document.defaultView.getComputedStyle){
             styleName = styleName.replace(/([/A-Z])/g, "-$1");
@@ -766,7 +745,6 @@ Jx().$package(function(J){
             var style = document.defaultView.getComputedStyle(el, "");
             return style && style.getPropertyValue(styleName);
         }
-
     };
 
     /**
@@ -991,7 +969,8 @@ Jx().$package(function(J){
     getTransform = function(target, style){
         //获取属性。就算设置的时候写的是0，读取的时候还是会读到 0px
         var v = target.style[transform] || 'scale(1) translate(0px, 0px) translate3d(0px, 0px, 0px) rotate(0deg)';
-        
+
+        // 使用正则去获取
         switch(style){
             case 'scale':
                 v = /scale\(([^)]*)\)/.exec(v);
@@ -1053,7 +1032,7 @@ Jx().$package(function(J){
                 //现在firefox3，chrome2，opera9.63都支持这个属性。
                 var box = {left:0,top:0,right:0,bottom:0};//
                 try{
-                    box=el.getBoundingClientRect();
+                    box = el.getBoundingClientRect();
                 }catch(ex){
                     return [0,0];
                 }
@@ -1146,7 +1125,9 @@ Jx().$package(function(J){
     }
     
     var parseCssPx = function(value){
+        // 单位为 auto 转化为 0
         if(!value || value == 'auto') return 0;
+        // 否则去掉 px 单位并转化为数字类型
         else return parseInt(value.substr(0, value.length-2));
     }
     /**
@@ -1160,6 +1141,7 @@ Jx().$package(function(J){
      * 
      */
     getPosX = function(el){
+        // 通过获取 left 的方法来获取到坐标，前提是这个元素必须是非 static 定位的
         return parseCssPx($D.getStyle(el, 'left'));
     }
     /**
@@ -1226,7 +1208,6 @@ Jx().$package(function(J){
             // We do not document the IE selection property or TextRange objects.
             return doc.selection.createRange().text;
         }
-    
     };
 
 
@@ -1302,7 +1283,7 @@ Jx().$package(function(J){
     for(var i=0; i<scripts.length; i++){
         
         if(scripts[i].getAttribute("hasJx")=="true"){
-            //J.out("hasJx: "+(scripts[i].getAttribute("hasJx")=="true"));
+            // TODO: 这是啥意思？
             J.src = scripts[i].src;
         }
     }
@@ -1311,7 +1292,6 @@ Jx().$package(function(J){
     }
     
     J.filename = J.src.replace(/(.*\/){0,}([^\\]+).*/ig,"$2");
-    //J.out(J.src+" _ "+J.filename)
     J.path = J.src.split(J.filename)[0];
     
     
