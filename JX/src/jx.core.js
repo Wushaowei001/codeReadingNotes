@@ -202,6 +202,7 @@
                         return topNamespace;
                     }
 
+                    // 格式化为字符串
                     name = String(name);
 
                     var i,
@@ -209,6 +210,7 @@
                         nis = name.split("."),
                         ns = topNamespace;
 
+                    // 可能是嵌套的命名空间，比如 lai.xiao.lai 三层
                     for(i = 0; i < nis.length; i=i+1){
                         ni = nis[i];
                         ns[ni] = ns[ni] || {};
