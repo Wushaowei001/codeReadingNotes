@@ -241,10 +241,40 @@ A.union(arr1, arr2)
     contains(parent, child, containSelf)
 
 
-阅读顺序
+# j.event.js
 
-jx.core
-jx.dom
-jx.event
+    $E = J.event;
+
+    // 绑定事件
+    addEventListener(element, eventType, handler, options)
+    removeEventListener
+
+    onDomReady(function () { // dom is ready})
+
+
+    // new J.Publish() 生成一个发布订阅模型
+    Jx().$package(function(J){
+        var onMsg = new J.event.Publish();
+         var func1 = function(option){
+             console.log(1, option);
+         };
+         var func2 = function(option){
+              console.log(2, option);
+          };
+         // 注册一个事件的观察者
+        onMsg.subscribe(func1); // 订阅，理解为 on 更好
+        onMsg.subscribe(func2);
+        var option = "demo";
+        onMsg.deliver(option);  // 触发，理解为 trigger
+        onMsg.unsubscribe(func1);// 取消订阅，理解为 off
+        onMsg.deliver(option);   // 这时候只有 func2 能响应了
+    });
+
+阅读顺序
+2200 168 25 65
+6226 0965 5123 7673
+jx.core done
+jx.dom done
+jx.event done
 jx.cookie 
 jx.http

@@ -8,7 +8,7 @@ Jx().$package(function(J){
         removeEventListener,
         removeOriginalEventListener,
         customEvent,
-        customEventHandlers=[],
+        customEventHandlers = [],
         onDomReady,
         isDomReady,
         Publish,
@@ -17,7 +17,7 @@ Jx().$package(function(J){
         notifyObservers,
         removeObserver,
         standardizeEvent,
-        packageContext=this;
+        packageContext = this;
     /**
      * event 名字空间
      * 
@@ -283,6 +283,8 @@ Jx().$package(function(J){
          */
         addEventListener = function(element, eventType, handler, options) {
             //var id = $E._uid( );  // Generate a unique property name
+            // 注意这里预先绑定自定义事件
+            // 也就是说自定义事件优先级比较高
             if(customEvent["on"+eventType]){
                 customEvent["on"+eventType](element, eventType, handler, options);
                 return;
@@ -391,8 +393,7 @@ Jx().$package(function(J){
     }
     // In IE 5 and later, we use attachEvent( ) and detachEvent( ), with a number of
     // hacks to make them compatible with addEventListener and removeEventListener.
-    else if (document.attachEvent) {//<del>这里不能用特性判断, 否则opera也会使用这个方法绑定事件</del>
-        //<del>ie都用这个方法是因为ie9对标准的addEventListener支持不完整</del>
+    else if (document.attachEvent) {
         /**
          * 兼容ie的写法
          * @ignore
@@ -602,11 +603,13 @@ Jx().$package(function(J){
             return "h" + $E._counter++;
         };
     }
+
+    // 自定义事件
     customEvent = {
         "ondrag" : function(element, eventType, handler){
             var _oldX,
                 _oldY,
-                isMove=false,
+                isMove = false,
                 orientMousedownEvent;
             var onElMousedown = function(e){
                 if(!J.browser.mobileSafari && e.button !== 0){//非左键点击直接return
@@ -634,7 +637,6 @@ Jx().$package(function(J){
                 }else{
                     $E.addEventListener(document, "mousemove", onElMousemove);
                 }
-//                J.out('onElMousedown: '+e.target.id );
             };
             var onElMousemove = function(e){
                 if(!J.browser.mobileSafari && e.button !== 0){//非左键点击直接return
@@ -652,8 +654,7 @@ Jx().$package(function(J){
                     y = e.clientY;
                 }
                 if(Math.abs(_oldX-x)+Math.abs(_oldY-y)>2) {
-//                    J.out("customdrag");
-                    //console.info("customdrag");
+                    // 大于2 表示有移动
                     if(J.browser.mobileSafari){
                         $E.removeEventListener(document, "touchmove", onElMousemove);
                         $E.removeEventListener(element, "touchend", onElMouseup);
@@ -662,68 +663,26 @@ Jx().$package(function(J){
                     }
                     if(!isMove){
                         handler.call(element,e);
+                        // 标记为移动中
                         isMove=true;
                     }
                 }else{
-                    //console.info( Math.abs(_oldX-x)+Math.abs(_oldY-y)>2 )
                 }
             };
             var onElMouseup = function(e){
                 if(!J.browser.mobileSafari && e.button !== 0){//非左键点击直接return
                     return;
                 }
-                /*
-                var x,y,touch;
-                if(J.browser.mobileSafari){
-                    touch = e.touches[0];
-                    _oldX= touch.pageX;
-                    _oldY= touch.pageY;
-                }else{
-                    x = e.clientX;
-                    y = e.clientY;
-                }
-                if(Math.abs(_oldX-x)+Math.abs(_oldY-y)<2) {
-                    isMove=false;
-                    if(J.browser.mobileSafari){
-                        $E.removeEventListener(document, "touchmove", onElMousemove);
-                    }else{
-                        $E.removeEventListener(document, "mousemove", onElMousemove);
-                    }
-                }else{
-                    
-                }
-                */
-                //console.info("touch end");
                 if(J.browser.mobileSafari){
                     $E.removeEventListener(document, "touchmove", onElMousemove);
                     if(!isMove){
-                        //console.info("not draging");
-                        /*
-                        var point = e.changedTouches[0];
-                        target = document.elementFromPoint(point.pageX,point.pageY); 
-                        if(target.tagName=="IFRAME"){
-                            return;
-                        }else{
-                        }
-                        // Create the fake event
-                        ev = document.createEvent('MouseEvents');
-                        ev.initMouseEvent('click', true, true, e.view, 1,
-                            point.screenX, point.screenY, point.clientX, point.clientY,
-                            e.ctrlKey, e.altKey, e.shiftKey, e.metaKey,
-                            0, null);
-                        ev._fake = true;
-                        target.dispatchEvent(ev);
-                        */
                     }else{
                         e.stopPropagation();
                         e.preventDefault();
-                        //console.info("is draging");
                     }
                 }else{
+                    // mouseup 后记得移除 mousemove 的监听
                     $E.removeEventListener(document, "mousemove", onElMousemove);
-                    //if(!isMove){
-                        //@TODO fire the event
-                    //}
                 }
             };
             if(J.browser.mobileSafari){
@@ -732,19 +691,23 @@ Jx().$package(function(J){
                 $E.addEventListener(element, "mousedown", onElMousedown);
                 $E.addEventListener(element, "mouseup", onElMouseup);
             }
-//            J.out('element: ' + element.id);
             customEventHandlers.push({"element":element,"eventType":eventType,handler:handler,"actions":[onElMousedown,onElMouseup]});
         },
+
+        // 取消拖拽
         "offdrag" : function(element, eventType,handler){
             for(var i in customEventHandlers){
+                // 定位到对应的监听，这里使用 element/eventType/handler 三个的全匹配
                 if(customEventHandlers[i].handler==handler&&customEventHandlers[i].element==element&&customEventHandlers[i].eventType==eventType){
                     if(J.browser.mobileSafari){
                         $E.removeEventListener(element, "touchstart",customEventHandlers[i].actions[0]);
                         $E.removeEventListener(element, "touchend",customEventHandlers[i].actions[1]);
                     }else{
+                        // 取消对应的监听
                         $E.removeEventListener(element, "mousedown",customEventHandlers[i].actions[0]);
                         $E.removeEventListener(element, "mouseup",customEventHandlers[i].actions[1]);
                     }
+                    // 注意要删除这个监听
                     customEventHandlers.splice(i,1);
                     break;
                 }
@@ -761,7 +724,6 @@ Jx().$package(function(J){
                 longtouchable = options.longtouchable,
                 mouseButton = -1;
             var onElMousedown = function(e){
-//                console.log('1: ' + e.button);
                 timeStamp = e.timeStamp;
                 isMove = false;
                 if(!J.browser.mobileSafari && e.button !== 0){//非左键点击直接return
@@ -789,6 +751,7 @@ Jx().$package(function(J){
                             $E.removeOriginalEventListener(element, "touchend",onElClick);
                         }else{
                             $E.removeEventListener(element, "mousemove",onElMouseMove);
+                            // 注意这里添加了鼠标移动事件，以及原生的点击事件
                             $E.removeOriginalEventListener(element, "click",onElClick);
                         }
                         handler.call(element,e,clickTime);
@@ -801,12 +764,9 @@ Jx().$package(function(J){
                     $E.addEventListener(element, "mousemove", onElMouseMove);
                     $E.addOriginalEventListener(element, "click", onElClick);
                 }
-//                e.preventDefault();
-//                e.stopPropagation();
-            };    
+            };
             var onElMouseup = function(e){
                 mouseButton = e.button;
-//                console.log('2: ' + e.button);
                 if(!J.browser.mobileSafari && e.button !== 0){//非左键点击直接return
                     return;
                 }
@@ -893,7 +853,10 @@ Jx().$package(function(J){
                 }
             }
         },
+
+        //右键菜单
         "oncontextmenu" : function(element, eventType, handler){
+            // TODO： 这里为啥只判断 IE9？
             if(J.browser.ie == 9){
                 /**
                  * @ignore
@@ -921,6 +884,8 @@ Jx().$package(function(J){
                 $E.removeOriginalEventListener(element, eventType, handler);
             }
         },
+
+        //鼠标滚轮事件
         "onmousewheel" : function(element, eventType, handler){
             if(J.browser.firefox){
                 var wrappedEvent = function(e){
@@ -1039,7 +1004,6 @@ Jx().$package(function(J){
                 $E.removeOriginalEventListener(element, "input", handler);
             }
         }
-        
     }
     
     
@@ -1063,25 +1027,29 @@ Jx().$package(function(J){
     onDomReady = function( f ) {
         // If the DOM is already loaded, execute the function right away
         if ( onDomReady.done ) {
+            // dom 已经加载完，立即执行函数
             return f();
         }
     
         // If we’ve already added a function
+        // timer 存在（未被取消) 则说明 dome 没加载完，将函数加入队列等待
         if ( onDomReady.timer ) {
             // Add it to the list of functions to execute
             onDomReady.ready.push( f );
         } else {
-            // 初始化onDomReady后要执行的function的数组
+            // 队列中没有元素，则 f 作为第一个元素，初始化onDomReady后要执行的function的数组
             onDomReady.ready = [ f ];
             
             // Attach an event for when the page finishes  loading,
             // just in case it finishes first. Uses addEvent.
+            // 注意 isDomRead 只会执行一次，执行后 onDomReady 的 timer 定时器会被清空，ready 数组中的函数会一一执行
             $E.on(window, "load", isDomReady);
     
             //  Check to see if the DOM is ready as quickly as possible
+            // TODO: 这里粗暴地设置 300ms 感觉会牺牲性能
             onDomReady.timer = window.setInterval( isDomReady, 300 );
         }
-    }
+    };
     
     /**
      * 
@@ -1103,19 +1071,23 @@ Jx().$package(function(J){
     
         // Check to see if a number of functions and elements are
         // able to be accessed
+        // document 具备了一些属性后，代表 dom 加载完成
         if ( document && document.getElementsByTagName && document.getElementById && document.body ) {
             // Remember that we’re now done
             onDomReady.done = true;
             
             // If they’re ready, we can stop checking
+            // 已经加载完成，取消定时器
             window.clearInterval( onDomReady.timer );
             onDomReady.timer = null;
     
             // Execute all the functions that were waiting
+            // dom 加载完成，执行队列里的所有函数
             for ( var i = 0; i < onDomReady.ready.length; i++ ){
                 onDomReady.ready[i]();
             }
 
+            // 执行完记得清空队列
             onDomReady.ready = null;
             
             return true;
@@ -1134,15 +1106,15 @@ Jx().$package(function(J){
      * @constructor
      * @example
      * Jx().$package(function(J){
-     *     var onMsg = new J.Publish();
+     *     var onMsg = new J.event.Publish();
      *  var funcA = function(option){
      *      alert(option);
      *  };
      *  // 注册一个事件的观察者
-     *     onMsg.subscribe(funcA);
+     *     onMsg.subscribe(funcA); // 订阅，理解为 on
      *     var option = "demo";
-     *     onMsg.deliver(option);
-     *     onMsg.unsubscribe(funcA);
+     *     onMsg.deliver(option);  // 触发，理解为 trigger
+     *     onMsg.unsubscribe(funcA);// 取消订阅，理解为 off
      *     onMsg.deliver(option);
      *     
      * };
@@ -1160,10 +1132,12 @@ Jx().$package(function(J){
      * @return {Function} 返回结果
      */
     Publish.prototype.subscribe = function(func){
+        // 已经订阅过了
         var alreadyExists = J.array.some(this.subscribers, function(el){
             return el === func;
         });
         if(!alreadyExists){
+            // 没有订阅，则添加到队列中
             this.subscribers.push(func);
         }
         return func;
@@ -1218,8 +1192,6 @@ Jx().$package(function(J){
             index,
             i;
         if(handler){
-            
-        
             // 转换成完整的事件描述字符串
             eventType = "on" + eventType;
             
@@ -1306,11 +1278,8 @@ Jx().$package(function(J){
                         flag = false;
                     }
                 }
-                //return flag;
             }
         }else{
-            // throw new Error("还没有定义 [" + targetModel + "] 对象的: " + eventType + " 事件！");
-            //return false;
         }
         return flag;
     };
@@ -1387,6 +1356,7 @@ Jx().$package(function(J){
     $E.removeEventListener = removeEventListener;
     $E.addOriginalEventListener = addOriginalEventListener;
     $E.removeOriginalEventListener = removeOriginalEventListener;
+
     // alias
     $E.on = $E.addEventListener;
     $E.off = $E.removeEventListener;
