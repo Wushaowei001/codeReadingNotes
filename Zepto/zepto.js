@@ -79,37 +79,37 @@ Zepto = (function () {
         return match
     }
 
-    function type (obj) {
+    function type(obj) {
         return obj == null ? String(obj) :
         class2type[toString.call(obj)] || "object"
     }
 
-    function isFunction (value) {
+    function isFunction(value) {
         return type(value) == "function"
     }
 
-    function isWindow (obj) {
+    function isWindow(obj) {
         return obj != null && obj == obj.window
     }
 
-    function isDocument (obj) {
+    function isDocument(obj) {
         return obj != null && obj.nodeType == obj.DOCUMENT_NODE
     }
 
-    function isObject (obj) {
+    function isObject(obj) {
         return type(obj) == "object"
     }
 
-    function isPlainObject (obj) {
+    function isPlainObject(obj) {
         return isObject(obj) && !isWindow(obj) && Object.getPrototypeOf(obj) == Object.prototype
     }
 
-    function likeArray (obj) {
+    function likeArray(obj) {
         return typeof obj.length == 'number'
     }
 
     // 清除为 null 的数组元素
-    function compact (array) {
+    function compact(array) {
         return filter.call(array, function (item) {
             return item != null
         })
@@ -117,7 +117,7 @@ Zepto = (function () {
 
 
     // 拼接数组
-    function flatten (array) {
+    function flatten(array) {
         return array.length > 0 ? $.fn.concat.apply([], array) : array
     }
 
@@ -129,7 +129,7 @@ Zepto = (function () {
     }
 
     // 将驼峰格式的字符串进行中划线化， 如 dataAbc => data-abc
-    function dasherize (str) {
+    function dasherize(str) {
         return str.replace(/::/g, '/')
             // Abc => a_bc
             .replace(/([A-Z]+)([A-Z][a-z])/g, '$1_$2')
@@ -158,7 +158,7 @@ Zepto = (function () {
      * @param name
      * @returns {*}
      */
-    function classRE (name) {
+    function classRE(name) {
         return name in classCache ?
             classCache[name] : (classCache[name] = new RegExp('(^|\\s)' + name + '(\\s|$)'))
     }
@@ -171,7 +171,7 @@ Zepto = (function () {
      * @param value
      * @returns {string}
      */
-    function maybeAddPx (name, value) {
+    function maybeAddPx(name, value) {
         return (typeof value == "number" && !cssNumber[dasherize(name)]) ? value + "px" : value
     }
 
@@ -181,7 +181,7 @@ Zepto = (function () {
      * @param nodeName
      * @returns {*}
      */
-    function defaultDisplay (nodeName) {
+    function defaultDisplay(nodeName) {
         var element, display
         if (!elementDisplay[nodeName]) {
             // nodeName 不在缓存列表，则手动创建
@@ -209,7 +209,7 @@ Zepto = (function () {
      * @param element
      * @returns {Array.<T>}
      */
-    function children (element) {
+    function children(element) {
         return 'children' in element ?
             slice.call(element.children) :
             $.map(element.childNodes, function (node) {
@@ -335,7 +335,7 @@ Zepto = (function () {
      * @param source
      * @param deep
      */
-    function extend (target, source, deep) {
+    function extend(target, source, deep) {
         for (key in source)
             if (deep && (isPlainObject(source[key]) || isArray(source[key]))) {
                 if (isPlainObject(source[key]) && !isPlainObject(target[key]))
@@ -382,7 +382,7 @@ Zepto = (function () {
                 )
     }
 
-    function filtered (nodes, selector) {
+    function filtered(nodes, selector) {
         return selector == null ? $(nodes) : $(nodes).filter(selector)
     }
 
@@ -397,16 +397,16 @@ Zepto = (function () {
         }
 
     // 若 arg 为函数，则在 context 上下文环境下执行传入 idx 和 payload，执行这个函数
-    function funcArg (context, arg, idx, payload) {
+    function funcArg(context, arg, idx, payload) {
         return isFunction(arg) ? arg.call(context, idx, payload) : arg
     }
 
-    function setAttribute (node, name, value) {
+    function setAttribute(node, name, value) {
         value == null ? node.removeAttribute(name) : node.setAttribute(name, value)
     }
 
     // access className property while respecting SVGAnimatedString
-    function className (node, value) {
+    function className(node, value) {
         var klass = node.className || '',
             svg = klass && klass.baseVal !== undefined
 
@@ -427,7 +427,7 @@ Zepto = (function () {
      * @param value
      * @returns {*}
      */
-    function deserializeValue (value) {
+    function deserializeValue(value) {
         var num
         try {
             return value ?
@@ -778,7 +778,7 @@ Zepto = (function () {
             return this.each(function () {
                 this.style.display == "none" && (this.style.display = '')
                 if (getComputedStyle(this, '').getPropertyValue("display") == "none")
-                    // defaultDisplay(nodeName) 将 nodeName 对应的元素的 display 属性设置为 block
+                // defaultDisplay(nodeName) 将 nodeName 对应的元素的 display 属性设置为 block
                     this.style.display = defaultDisplay(this.nodeName)
             })
         },
@@ -796,7 +796,7 @@ Zepto = (function () {
             var func = isFunction(structure)
             if (this[0] && !func)
                 var dom = $(structure).get(0),
-                    // 先找到父元素
+                // 先找到父元素
                     clone = dom.parentNode || this.length > 1
 
             return this.each(function (index) {
@@ -908,7 +908,7 @@ Zepto = (function () {
         removeAttr: function (name) {
             return this.each(function () {
                 // nodeType === 1 表示是元素节点
-                 this.nodeType === 1 && setAttribute(this, name)
+                this.nodeType === 1 && setAttribute(this, name)
             })
         },
         prop: function (name, value) {
@@ -1124,7 +1124,7 @@ Zepto = (function () {
         }
     })
 
-    function traverseNode (node, fun) {
+    function traverseNode(node, fun) {
         fun(node)
         for (var i = 0, len = node.childNodes.length; i < len; i++)
             traverseNode(node.childNodes[i], fun)
